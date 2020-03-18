@@ -26,7 +26,9 @@ public class CityRoadFileDAO {
 	}	
 	void processLine(String line, HashMap <String, String> cityRoadMap)
 	{
-		String [] cityFmTo = line.split(","); 
-		cityRoadMap.put(cityFmTo[0].trim(), cityFmTo[1].trim());
+		String [] directlyConnectedCities = line.split(",");
+		String cityA = directlyConnectedCities[0].trim();
+		String cityB = directlyConnectedCities[1].trim();
+		cityRoadMap.put(cityA, cityB);
 	}
 }
