@@ -35,7 +35,9 @@ public class CityRoadBOTest {
 	public void before() {
 		cityRoadMap = new HashMap<String, String>();
 		cityRoadMap.put("Boston","New York");
-		when(cityRoadFileDAO.getCityRoadMap(cityRoadBO.sCityRoadMapFileName)).thenReturn(cityRoadMap);
+		cityRoadMap.put("Philadelphia", "Newark");
+		cityRoadMap.put("Newark", "Boston");
+		when(cityRoadFileDAO.getCityRoadMap(cityRoadBO.CITY_ROAD_MAP_FILENAME)).thenReturn(cityRoadMap);
 	}
 	@Test
 	public void connectedNullTest() {
@@ -70,10 +72,34 @@ public class CityRoadBOTest {
 		assertEquals(NO, response);
 	}
 	@Test
-	public void connectedCitiesConnectedTest() {
+	public void connectedOriginDestinationConnectedTest() {
 		//Boston is connected to New York
 		String origin = "Boston";
 		String destination = "New York";
+		String response = cityRoadBO.connected(origin, destination);
+		assertEquals(YES, response);
+	}
+	@Test
+	public void connectedDestinationOriginConnectedTest() {
+		//Boston is connected to New York
+		String destination = "Boston";
+		String origin = "New York";
+		String response = cityRoadBO.connected(origin, destination);
+		assertEquals(YES, response);
+	}
+	@Test
+	public void connectedOriginDestinationIndirectConnectedTest() {
+		//Newark is indirectly connected to New York
+		String origin = "Newark";
+		String destination = "New York";
+		String response = cityRoadBO.connected(origin, destination);
+		assertEquals(YES, response);
+	}
+	@Test
+	public void connectedDestinationOriginIndirectConnectedTest() {
+		//New York is indirectly connected to Newark
+		String destination = "Newark";
+		String origin = "New York";
 		String response = cityRoadBO.connected(origin, destination);
 		assertEquals(YES, response);
 	}

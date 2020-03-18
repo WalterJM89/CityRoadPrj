@@ -8,52 +8,72 @@ import com.mastercard.cityroad.dao.CityRoadFileDAO;
 
 @Service("cityRoadBO")
 public class CityRoadBO {
-	final static String sYes = "YES";
-	final static String sNo = "NO";
-	final static String sCityRoadMapFileName   = "City.txt";
-	static HashMap <String, String> cityRoadMap  = null;
+	final static String YES = "YES";
+	final static String NO = "NO";
+	final static String CITY_ROAD_MAP_FILENAME   = "City.txt";
+	private HashMap <String, String> cityRoadMap  = null;
 	@Autowired
 	private CityRoadFileDAO cityRoadFileDAO;
-	
-	public String connected( String origin, String destination)
+
+	/**
+	 * Checks if origin city and destination city are connected. 
+	 * 
+	 * @param origin
+	 * @param destination
+	 * @return YES if cities are connected, NO for any other cases.
+	 */
+	public String connected(String origin, String destination)
 	{
 		if(origin == null || destination == null || origin.trim().equals("")|| destination.trim().equals(""))
-			return sNo;
+			return NO;
 		origin = origin.trim();
 		destination = destination.trim();
-		String sValue = null;
+		boolean isConnected;
 		if (cityRoadMap == null )
-			 getCityRoadMap(sCityRoadMapFileName);
-		sValue = cityRoadMap.get(origin);
-		if ( ( sValue != null ) && (sValue.equals(destination) ))
-				return sYes;
-		// Flip Around
-		sValue = cityRoadMap.get(destination);
-		if ( ( sValue != null ) && (sValue.equals(origin) ))
-			return sYes;
-		// Find road through another City
-		String sCityPassThrough = null;  //  sCityA -- sCityPassThrough -- sCityB
-		sCityPassThrough = cityRoadMap.get(origin);
-		sValue = cityRoadMap.get(sCityPassThrough);
-		if ( ( sValue != null ) && (sValue.equals(destination) ))
-				return sYes;		
-		sCityPassThrough = cityRoadMap.get(destination);  //  sCityB -- sCityPassThrough -- sCityA
-		sValue = cityRoadMap.get(sCityPassThrough);
-		if ( ( sValue != null ) && (sValue.equals(origin) ))
-				return sYes;				
-		return sNo;
+			 getCityRoadMap(CITY_ROAD_MAP_FILENAME);
+		//check if origin or destination exist in map
+		if((!cityRoadMap.containsKey(origin) && !cityRoadMap.containsValue(origin)) || (!cityRoadMap.containsKey(destination) && !cityRoadMap.containsValue(destination)))
+			return NO;
+		//check if origin-k and destination-v  k-v pair exist
+		//if not, for origin-k, check if using returned value as key in recursion will eventually return destination.
+		isConnected = cityConnected(origin, origin, destination);
+		if(isConnected)
+			return YES;
+		//check if origin-v, and destination-k k-v pair exist
+		//if not, for destination-k, check if using returned value as key in recursion will eventually return origin.
+		isConnected = cityConnected(destination, destination, origin);
+		if(isConnected)
+			return YES;
+		return NO;
 	}
-	synchronized private void getCityRoadMap(String sCityRoadMapFileName)
+	/**
+	 * Recursive method to find whether cityA and cityB are directly, or indirectly connected.
+	 * 
+	 * @param cityA
+	 * @param key
+	 * @param cityB
+	 * @return true if connected, otherwise returns false.
+	 */
+	private boolean cityConnected(String cityA, String key, String cityB) {
+		String value = cityRoadMap.get(key);
+		if(value == null || cityA.equals(value))
+			return false;
+		else if(value.equals(cityB))
+			return true;
+		else
+			return cityConnected(cityA, value, cityB);
+	}
+
+	/**
+	 * Will get single instance of cityRoadMap from CityRoadFileDAO if data member is null.
+	 * 
+	 * @param cityRoadMapFileName
+	 */
+	synchronized private void getCityRoadMap(String cityRoadMapFileName)
 	{
-		if (cityRoadMap != null )
-			return;  // Kind of double check design pattern,
-		cityRoadMap  = cityRoadFileDAO.getCityRoadMap(sCityRoadMapFileName);
+		if (cityRoadMap != null && !cityRoadMap.isEmpty())
+			return;
+		HashMap <String, String> tempMap = cityRoadFileDAO.getCityRoadMap(cityRoadMapFileName);
+		cityRoadMap  = tempMap;
 	}
-	public void printCityRoadMap()
-	{ //  just to test incrementally
-		if (cityRoadMap == null )
-			getCityRoadMap(sCityRoadMapFileName);		
-		cityRoadMap.forEach((key ,value)->System.out.println( key + " , " + value));
-	}
-	
 }

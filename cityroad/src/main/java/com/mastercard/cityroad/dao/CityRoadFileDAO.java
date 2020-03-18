@@ -11,22 +11,22 @@ import org.springframework.stereotype.Repository;
 
 @Repository("cityRoadFileDAO")
 public class CityRoadFileDAO {
-	public HashMap <String, String>  getCityRoadMap (String sCityRoadMapFileName)
+	public HashMap <String, String>  getCityRoadMap (String cityRoadMapFileName)
 	{
 		HashMap <String, String> cityRoadMap  =  new HashMap<>();
 		try {
-			Resource resource = new ClassPathResource(sCityRoadMapFileName);
+			Resource resource = new ClassPathResource(cityRoadMapFileName);
 			Path filePath = resource.getFile().toPath();
-			Files.lines(filePath).forEach( sLine -> processLine( sLine , cityRoadMap ) );
+			Files.lines(filePath).forEach( line -> processLine( line , cityRoadMap ) );
 		} 
 		catch (IOException e) {
 		    e.printStackTrace();
 		}		
 		return cityRoadMap;
 	}	
-	void processLine(String sLine, HashMap <String, String> cityRoadMap)
+	void processLine(String line, HashMap <String, String> cityRoadMap)
 	{
-		String [] sCityFmTo = sLine.split(","); 
-		cityRoadMap.put(sCityFmTo[0].trim(), sCityFmTo[1].trim());  // Need to trim - remove leading and trailing white space.
+		String [] cityFmTo = line.split(","); 
+		cityRoadMap.put(cityFmTo[0].trim(), cityFmTo[1].trim());
 	}
 }
